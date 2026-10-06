@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Winnaars">
+<meta name="theme-color" content="#df0000">
+<link rel="apple-touch-icon" href="assets/spinner-red.png">
+<link rel="icon" href="assets/spinner-red.png">
+<title>MediaMarkt Winnaars</title>
+<style>
+@font-face { font-family: "MM Headline"; src: url("assets/MMHeadlinePro-Regular.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Noto Sans"; src: url("assets/NotoSans-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Noto Sans"; src: url("assets/NotoSans-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+
+:root {
+  --red: #df0000;
+  --red-dark: #b00000;
+  --black: #000;
+  --ink: #1a1a1a;
+  --grey-700: #4d4d4d;
+  --grey-500: #8a8a8a;
+  --grey-300: #d6d6d6;
+  --grey-100: #f2f2f2;
+  --white: #fff;
+  --ok: #1e8a3c;
+  --radius: 10px;
+  --head: "MM Headline", "Noto Sans", Arial, sans-serif;
+  --body: "Noto Sans", Arial, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--body); color: var(--ink); background: var(--grey-100);
+  -webkit-font-smoothing: antialiased; overscroll-behavior: none;
+}
+button, input, select { font: inherit; color: inherit; }
+.hidden { display: none !important; }
+
+/* ---------- Header ---------- */
+.topbar {
+  background: var(--red); color: var(--white);
+  padding: calc(env(safe-area-inset-top) + 18px) 24px 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.topbar .logo { height: 34px; display: block; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.topbar .tag {
+  font-family: var(--head); font-size: 20px; letter-spacing: .02em; text-transform: uppercase;
+  background: var(--white); color: var(--red); padding: 6px 12px; border-radius: 4px; transform: skewX(-12deg);
+}
+.topbar .tag span { display: inline-block; transform: skewX(12deg); }
+
+/* ---------- Kiosk ---------- */
+.screen { min-height: 100%; display: flex; flex-direction: column; }
+.hero {
+  background: var(--red); color: var(--white); position: relative; overflow: hidden;
+  padding: 8px 24px 64px;
+}
+.hero .swirl {
+  position: absolute; right: -90px; top: -60px; width: 340px; opacity: .14; pointer-events: none;
+  animation: spin 40s linear infinite;
+}
+.hero h1 {
+  font-family: var(--head); font-weight: 400; font-size: clamp(40px, 7vw, 68px); line-height: .95;
+  margin: 8px 0 10px; text-transform: uppercase; max-width: 15ch; position: relative;
+}
+.hero p { margin: 0; font-size: 18px; max-width: 46ch; position: relative; opacity: .95; }
+
+.card {
+  background: var(--white); border-radius: var(--radius); box-shadow: 0 6px 24px rgba(0,0,0,.08);
+  margin: -40px auto 32px; width: min(760px, calc(100% - 32px)); padding: 28px; position: relative;
+}
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px; }
+.grid .full { grid-column: 1 / -1; }
+@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .card { padding: 20px; } }
+
+.field label { display: block; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+.field input, .field select {
+  width: 100%; height: 56px; padding: 0 16px; font-size: 18px;
+  border: 2px solid var(--grey-300); border-radius: 8px; background: var(--white);
+  outline: none; transition: border-color .15s; -webkit-appearance: none; appearance: none;
+}
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23000' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 16px center; padding-right: 44px;
+}
+.field input:focus, .field select:focus { border-color: var(--black); }
+.field.invalid input, .field.invalid select { border-color: var(--red); background: #fff5f5; }
+.field .err { color: var(--red); font-size: 14px; margin-top: 6px; display: none; }
+.field.invalid .err { display: block; }
+.dob { display: grid; grid-template-columns: 1fr 1.6fr 1.2fr; gap: 8px; }
+.dob select { padding: 0 30px 0 12px; background-position: right 10px center; }
+
+.checks { margin-top: 24px; display: grid; gap: 14px; }
+.check {
+  display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px;
+  border: 2px solid var(--grey-300); border-radius: 8px; cursor: pointer; font-size: 16px; line-height: 1.4;
+}
+.check input { position: absolute; opacity: 0; pointer-events: none; }
+.check .box {
+  flex: 0 0 28px; height: 28px; border: 2px solid var(--grey-500); border-radius: 6px;
+  display: grid; place-items: center; background: var(--white); margin-top: 1px;
+}
+.check .box svg { width: 16px; height: 16px; opacity: 0; }
+.check input:checked + .box { background: var(--red); border-color: var(--red); }
+.check input:checked + .box svg { opacity: 1; }
+.check.invalid { border-color: var(--red); background: #fff5f5; }
+.check a { color: var(--red); font-weight: 700; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: 60px; padding: 0 28px; border: 0; border-radius: 8px; cursor: pointer;
+  font-weight: 700; font-size: 19px; background: var(--red); color: var(--white);
+  transition: background .15s, transform .05s;
+}
+.btn:active { transform: scale(.98); }
+.btn:hover { background: var(--red-dark); }
+.btn.black { background: var(--black); }
+.btn.black:hover { background: #333; }
+.btn.ghost { background: var(--white); color: var(--ink); border: 2px solid var(--grey-300); }
+.btn.ghost:hover { border-color: var(--black); }
+.btn.sm { height: 44px; font-size: 15px; padding: 0 16px; }
+.btn.block { width: 100%; }
+.btn[disabled] { opacity: .5; pointer-events: none; }
+.submit-row { margin-top: 26px; }
+.formerror {
+  margin-top: 16px; padding: 14px 16px; border-radius: 8px; background: #fff0f0;
+  color: var(--red-dark); font-weight: 700; display: none;
+}
+.formerror.show { display: block; }
+.privacy { font-size: 13px; color: var(--grey-700); margin: 16px 0 0; line-height: 1.5; }
+
+/* ---------- Thank you ---------- */
+.thanks {
+  position: fixed; inset: 0; background: var(--red); color: var(--white); z-index: 40;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px;
+}
+.thanks img { width: 180px; animation: spin 3s cubic-bezier(.3,.1,.3,1) infinite; }
+.thanks h2 { font-family: var(--head); font-weight: 400; font-size: clamp(44px, 8vw, 80px); margin: 32px 0 8px; text-transform: uppercase; }
+.thanks p { font-size: 20px; max-width: 30ch; margin: 0; }
+.thanks .bar { width: 220px; height: 6px; background: rgba(255,255,255,.3); border-radius: 3px; margin-top: 36px; overflow: hidden; }
+.thanks .bar i { display: block; height: 100%; width: 100%; background: var(--white); transform-origin: left; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* ---------- Modals ---------- */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 50;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal {
+  background: var(--white); border-radius: var(--radius); width: min(560px, 100%);
+  max-height: calc(100% - 32px); overflow: auto; padding: 26px;
+}
+.modal h3 { font-family: var(--head); font-weight: 400; font-size: 32px; text-transform: uppercase; margin: 0 0 12px; }
+.modal .terms { white-space: pre-wrap; line-height: 1.55; font-size: 16px; }
+.modal .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+
+.pin-dots { display: flex; gap: 14px; justify-content: center; margin: 10px 0 20px; }
+.pin-dots i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--black); }
+.pin-dots i.on { background: var(--black); }
+.pin-dots.shake { animation: shake .35s; }
+@keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto; }
+.keypad button {
+  height: 64px; border-radius: 8px; border: 2px solid var(--grey-300); background: var(--white);
+  font-size: 24px; font-weight: 700; cursor: pointer;
+}
+.keypad button:active { background: var(--grey-100); }
+
+/* ---------- Admin ---------- */
+.admin { background: var(--grey-100); min-height: 100%; }
+.admin .wrap { width: min(1100px, calc(100% - 32px)); margin: 24px auto 48px; }
+.admin h2 { font-family: var(--head); font-weight: 400; font-size: 40px; text-transform: uppercase; margin: 0 0 4px; }
+.admin .sub { color: var(--grey-700); margin: 0 0 20px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--white); border-radius: var(--radius); padding: 16px 18px; }
+.stat b { display: block; font-family: var(--head); font-weight: 400; font-size: 44px; line-height: 1; color: var(--red); }
+.stat span { color: var(--grey-700); font-size: 14px; }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.panel { background: var(--white); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.panel h4 { margin: 0 0 14px; font-size: 18px; }
+.settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.settings textarea {
+  width: 100%; min-height: 140px; padding: 12px 14px; font: inherit; font-size: 15px;
+  border: 2px solid var(--grey-300); border-radius: 8px; resize: vertical;
+}
+.settings .field input { height: 48px; font-size: 16px; }
+@media (max-width: 700px) { .settings { grid-template-columns: 1fr; } }
+.search { height: 44px; border: 2px solid var(--grey-300); border-radius: 8px; padding: 0 14px; min-width: 220px; flex: 1; }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--grey-300); white-space: nowrap; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--grey-700); }
+td.num { color: var(--grey-500); }
+tr.winner td { background: #fff3cd; }
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
+.pill.red { background: #ffe1e1; color: var(--red-dark); }
+.pill.gold { background: #ffe58a; color: #6b4d00; }
+.iconbtn { background: none; border: 0; cursor: pointer; color: var(--grey-500); font-size: 20px; padding: 4px 8px; }
+.iconbtn:hover { color: var(--red); }
+.empty { text-align: center; color: var(--grey-500); padding: 32px 0; }
+.log li { margin-bottom: 6px; }
+.danger { border: 2px solid #ffd0d0; }
+
+/* ---------- Draw ---------- */
+.draw {
+  position: fixed; inset: 0; z-index: 60; background: var(--red); color: var(--white);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; overflow: hidden;
+}
+.draw .bgswirl { position: absolute; width: 140vmax; opacity: .08; animation: spin 20s linear infinite; pointer-events: none; }
+.draw.fast .bgswirl { animation-duration: 1.2s; }
+.draw .label { font-family: var(--head); font-size: 28px; text-transform: uppercase; letter-spacing: .04em; position: relative; }
+.draw .name {
+  font-family: var(--head); font-size: clamp(48px, 9vw, 110px); line-height: 1; text-transform: uppercase;
+  margin: 24px 0; min-height: 1.1em; position: relative;
+}
+.draw .meta { font-size: 18px; position: relative; opacity: .95; line-height: 1.6; }
+.draw .btns { display: flex; gap: 12px; margin-top: 32px; position: relative; flex-wrap: wrap; justify-content: center; }
+.draw .btn.white { background: var(--white); color: var(--red); }
+.draw .proof { font-size: 13px; opacity: .8; margin-top: 18px; position: relative; font-family: ui-monospace, Menlo, monospace; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--black); color: var(--white);
+  padding: 14px 20px; border-radius: 8px; z-index: 80; font-weight: 700; max-width: calc(100% - 32px);
+}
+</style>
+</head>
+<body>
+
+<!-- ================= KIOSK ================= -->
+<div id="kiosk" class="screen">
+  <header class="topbar">
+    <img id="logo" class="logo" src="assets/logo-white.png" alt="MediaMarkt" draggable="false">
+    <div class="tag"><span id="eventTag">King of the Hill</span></div>
+  </header>
+  <section class="hero">
+    <img class="swirl" src="assets/spinner-white.png" alt="">
+    <h1 id="heroTitle">Gewonnen? Doe mee voor de hoofdprijs!</h1>
+    <p>Vul je gegevens in. Uit alle winnaars trekken we willekeurig de winnaar van de hoofdprijs. Wij nemen contact met je op.</p>
+  </section>
+
+  <form id="form" class="card" novalidate autocomplete="off">
+    <div class="grid">
+      <div class="field" data-f="firstName">
+        <label for="firstName">Voornaam</label>
+        <input id="firstName" name="firstName" autocapitalize="words" autocomplete="off">
+        <div class="err">Vul je voornaam in.</div>
+      </div>
+      <div class="field" data-f="lastName">
+        <label for="lastName">Achternaam</label>
+        <input id="lastName" name="lastName" autocapitalize="words" autocomplete="off">
+        <div class="err">Vul je achternaam in.</div>
+      </div>
+      <div class="field" data-f="email">
+        <label for="email">E-mailadres</label>
+        <input id="email" name="email" type="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
+        <div class="err">Vul een geldig e-mailadres in.</div>
+      </div>
+      <div class="field" data-f="phone">
+        <label for="phone">Telefoonnummer</label>
+        <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="06 12345678" autocomplete="off">
+        <div class="err">Vul een geldig telefoonnummer in.</div>
+      </div>
+      <div class="field" data-f="dob">
+        <label>Geboortedatum</label>
+        <div class="dob">
+          <select id="dobD" aria-label="Dag"></select>
+          <select id="dobM" aria-label="Maand"></select>
+          <select id="dobY" aria-label="Jaar"></select>
+        </div>
+        <div class="err" id="dobErr">Kies je geboortedatum.</div>
+      </div>
+      <div class="field" data-f="country">
+        <label for="country">Land van woonplaats</label>
+        <select id="country" name="country">
+          <option value="">Kies een land</option>
+          <option>Nederland</option>
+          <option>België</option>
+          <option>Duitsland</option>
+          <option>Ander land</option>
+        </select>
+        <div class="err">Deelname is alleen mogelijk voor inwoners van Nederland.</div>
+      </div>
+    </div>
+
+    <div class="checks">
+      <label class="check" data-f="terms">
+        <input type="checkbox" id="terms">
+        <span class="box"><svg viewBox="0 0 16 16"><path d="M2 8.5l4 4L14 4" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>Ik ga akkoord met de <a href="#" id="openTerms">actievoorwaarden</a>.</span>
+      </label>
+      <label class="check" data-f="consent">
+        <input type="checkbox" id="consent">
+        <span class="box"><svg viewBox="0 0 16 16"><path d="M2 8.5l4 4L14 4" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>Ik geef MediaMarkt toestemming om mijn gegevens te gebruiken, uitsluitend voor het trekken van de winnaar en om contact met mij op te nemen.</span>
+      </label>
+    </div>
+
+    <div class="formerror" id="formError"></div>
+    <div class="submit-row"><button class="btn block" type="submit">Verstuur deelname</button></div>
+    <p class="privacy">Je gegevens worden alleen op dit apparaat opgeslagen en na afloop van de actie verwijderd.</p>
+  </form>
+</div>
+
+<!-- ================= THANK YOU ================= -->
+<div id="thanks" class="thanks hidden">
+  <img src="assets/spinner-white.png" alt="">
+  <h2>Bedankt!</h2>
+  <p id="thanksText">Je doet mee voor de hoofdprijs. Veel succes!</p>
+  <div class="bar"><i id="thanksBar"></i></div>
+</div>
+
+<!-- ================= ADMIN ================= -->
+<div id="admin" class="admin hidden">
+  <header class="topbar">
+    <img class="logo" src="assets/logo-white.png" alt="MediaMarkt">
+    <button class="btn sm ghost" id="closeAdmin">Terug naar formulier</button>
+  </header>
+  <div class="wrap">
+    <h2>Beheer</h2>
+    <p class="sub">Alleen voor medewerkers. Gegevens staan alleen op dit apparaat.</p>
+
+    <div class="stats">
+      <div class="stat"><b id="stTotal">0</b><span>Deelnemers</span></div>
+      <div class="stat"><b id="stToday">0</b><span>Vandaag</span></div>
+      <div class="stat"><b id="stWinners">0</b><span>Getrokken winnaars</span></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn" id="btnDraw">Trek winnaar</button>
+      <button class="btn black" id="btnExport">Export naar Excel (CSV)</button>
+      <button class="btn ghost" id="btnBackup">Back-up (JSON)</button>
+      <button class="btn ghost" id="btnRestore">Back-up terugzetten</button>
+      <input type="file" id="restoreFile" accept="application/json,.json" class="hidden">
+    </div>
+
+    <div class="panel">
+      <div class="toolbar" style="margin-bottom:10px">
+        <input class="search" id="search" placeholder="Zoek op naam, e-mail of telefoon…">
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>#</th><th>Datum / tijd</th><th>Naam</th><th>E-mail</th><th>Telefoon</th><th>Geb.datum</th><th>Actie</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty hidden" id="empty">Nog geen deelnemers.</div>
+    </div>
+
+    <div class="panel">
+      <h4>Trekkingslog (bewijs)</h4>
+      <ol class="log" id="drawLog"></ol>
+      <p class="sub" style="margin:8px 0 0;font-size:14px">Tip: neem het scherm op (iPad: Bedieningspaneel → Schermopname) tijdens de trekking, dan heb je beeldbewijs dat de winnaar willekeurig is getrokken.</p>
+    </div>
+
+    <div class="panel">
+      <h4>Instellingen</h4>
+      <div class="settings">
+        <div class="field"><label for="setEvent">Naam actie / game</label><input id="setEvent"></div>
+        <div class="field"><label for="setTitle">Titel op formulier</label><input id="setTitle"></div>
+        <div class="field"><label for="setMinAge">Minimumleeftijd (0 = geen)</label><input id="setMinAge" type="number" min="0" max="99" inputmode="numeric"></div>
+        <div class="field"><label for="setPin">Beheer-pincode (4 cijfers)</label><input id="setPin" inputmode="numeric" maxlength="4"></div>
+        <div class="field full" style="grid-column:1/-1"><label for="setTerms">Actievoorwaarden</label><textarea id="setTerms"></textarea></div>
+      </div>
+      <div class="toolbar" style="margin:14px 0 0"><button class="btn sm black" id="saveSettings">Instellingen opslaan</button></div>
+    </div>
+
+    <div class="panel danger">
+      <h4>Alle gegevens wissen</h4>
+      <p class="sub" style="margin:0 0 12px">Maak eerst een export. Na het wissen zijn alle deelnemers en de trekkingslog definitief weg (AVG: bewaar gegevens niet langer dan nodig).</p>
+      <button class="btn sm" id="wipe">Alles wissen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DRAW ================= -->
+<div id="draw" class="draw hidden">
+  <img class="bgswirl" src="assets/spinner-white.png" alt="">
+  <div class="label" id="drawLabel">Trekking hoofdprijs</div>
+  <div class="name" id="drawName">&nbsp;</div>
+  <div class="meta" id="drawMeta"></div>
+  <div class="proof" id="drawProof"></div>
+  <div class="btns" id="drawBtns"></div>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+(() => {
+  "use strict";
+  const KEY = "mm-winnaars-v1";
+  const DEFAULT_TERMS =
+`Actievoorwaarden – King of the Hill
+
+1. Deelname staat alleen open voor inwoners van Nederland.
+2. Alleen spelers die een ronde King of the Hill hebben gewonnen, mogen dit formulier invullen. Eén deelname per persoon.
+3. Uit alle geldige deelnemers wordt de winnaar van de hoofdprijs willekeurig getrokken.
+4. De winnaar krijgt telefonisch of per e-mail bericht.
+5. Medewerkers van MediaMarkt zijn uitgesloten van deelname.
+6. Je gegevens worden alleen gebruikt om de winnaar te trekken en contact op te nemen, en na afloop van de actie verwijderd.
+7. Bij vermoeden van fraude kan MediaMarkt een deelname ongeldig verklaren.`;
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ---------- Storage ----------
+  function load() {
+    let d = null;
+    try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    d = d || {};
+    d.entries = d.entries || [];
+    d.draws = d.draws || [];
+    d.settings = Object.assign({ event: "King of the Hill", title: "Gewonnen? Doe mee voor de hoofdprijs!", minAge: 0, pin: "1234", terms: DEFAULT_TERMS }, d.settings || {});
+    return d;
+  }
+  let db = load();
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(db)); return true; }
+    catch (e) { toast("Opslaan mislukt! Opslag vol of geblokkeerd — maak direct een export."); return false; }
+  }
+  // Ask the browser to keep our data (helps against Safari storage eviction).
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+
+  // ---------- Helpers ----------
+  const pad = (n) => String(n).padStart(2, "0");
+  const fmtDT = (iso) => { const d = new Date(iso); return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const fmtDob = (s) => { const [y, m, d] = s.split("-"); return `${d}-${m}-${y}`; };
+  const normPhone = (p) => p.replace(/[^\d+]/g, "").replace(/^0031/, "+31").replace(/^\+310?/, "0");
+  const normEmail = (e) => e.trim().toLowerCase();
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  function randInt(max) { // unbiased crypto random 0..max-1
+    const lim = Math.floor(0x100000000 / max) * max; const a = new Uint32Array(1);
+    do { crypto.getRandomValues(a); } while (a[0] >= lim);
+    return a[0] % max;
+  }
+  function toast(msg) {
+    const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+    document.body.appendChild(t); setTimeout(() => t.remove(), 3200);
+  }
+  function download(name, text, type) {
+    const blob = new Blob([text], { type });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  const stamp = () => { const d = new Date(); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`; };
+
+  // ---------- Kiosk form ----------
+  const months = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
+  $("dobD").innerHTML = `<option value="">Dag</option>` + Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("");
+  $("dobM").innerHTML = `<option value="">Maand</option>` + months.map((m, i) => `<option value="${i + 1}">${m}</option>`).join("");
+  const yNow = new Date().getFullYear();
+  $("dobY").innerHTML = `<option value="">Jaar</option>` + Array.from({ length: 100 }, (_, i) => `<option>${yNow - 5 - i}</option>`).join("");
+
+  function applySettingsToKiosk() {
+    $("eventTag").textContent = db.settings.event;
+    $("heroTitle").textContent = db.settings.title;
+  }
+  applySettingsToKiosk();
+
+  const form = $("form");
+  const setInvalid = (f, bad) => form.querySelector(`[data-f="${f}"]`).classList.toggle("invalid", bad);
+  form.addEventListener("input", (e) => { const f = e.target.closest("[data-f]"); if (f) f.classList.remove("invalid"); $("formError").classList.remove("show"); });
+  form.addEventListener("change", (e) => { const f = e.target.closest("[data-f]"); if (f) f.classList.remove("invalid"); });
+
+  function age(y, m, d) {
+    const now = new Date(); let a = now.getFullYear() - y;
+    if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) a--;
+    return a;
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = {
+      firstName: $("firstName").value.trim(),
+      lastName: $("lastName").value.trim(),
+      email: normEmail($("email").value),
+      phone: $("phone").value.trim(),
+      country: $("country").value,
+    };
+    let ok = true;
+    const flag = (f, bad) => { setInvalid(f, bad); if (bad) ok = false; };
+    flag("firstName", v.firstName.length < 1);
+    flag("lastName", v.lastName.length < 1);
+    flag("email", !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.email));
+    const digits = v.phone.replace(/\D/g, "");
+    flag("phone", digits.length < 9 || digits.length > 15);
+
+    const d = +$("dobD").value, m = +$("dobM").value, y = +$("dobY").value;
+    const dt = new Date(y, m - 1, d);
+    let dobBad = !(d && m && y) || dt.getMonth() !== m - 1;
+    $("dobErr").textContent = dobBad ? "Kies een geldige geboortedatum." : "";
+    const minAge = +db.settings.minAge || 0;
+    if (!dobBad && minAge && age(y, m, d) < minAge) { dobBad = true; $("dobErr").textContent = `Je moet minimaal ${minAge} jaar zijn om mee te doen.`; }
+    flag("dob", dobBad);
+
+    const cField = form.querySelector('[data-f="country"] .err');
+    cField.textContent = v.country ? "Deelname is alleen mogelijk voor inwoners van Nederland." : "Kies een land.";
+    flag("country", v.country !== "Nederland");
+    flag("terms", !$("terms").checked);
+    flag("consent", !$("consent").checked);
+
+    if (!ok) {
+      const first = form.querySelector(".invalid"); first && first.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    const pn = normPhone(v.phone);
+    const dup = db.entries.find((x) => x.event === db.settings.event && (x.email === v.email || normPhone(x.phone) === pn));
+    if (dup) {
+      const fe = $("formError"); fe.textContent = "Met dit e-mailadres of telefoonnummer is al deelgenomen. Je kunt maar één keer meedoen."; fe.classList.add("show");
+      return;
+    }
+    db.entries.push({
+      id: uid(), createdAt: new Date().toISOString(), event: db.settings.event,
+      firstName: v.firstName, lastName: v.lastName, email: v.email, phone: v.phone,
+      dob: `${y}-${pad(m)}-${pad(d)}`, country: v.country, terms: true, consent: true,
+    });
+    if (!save()) { db = load(); return; }
+    resetForm();
+    showThanks(v.firstName);
+  });
+
+  function resetForm() {
+    form.reset();
+    form.querySelectorAll(".invalid").forEach((el) => el.classList.remove("invalid"));
+    $("formError").classList.remove("show");
+    window.scrollTo(0, 0);
+  }
+
+  function showThanks(name) {
+    $("thanksText").textContent = `${name}, je doet mee voor de hoofdprijs. Veel succes!`;
+    const bar = $("thanksBar"); bar.style.animation = "none"; void bar.offsetWidth; bar.style.animation = "shrink 6s linear forwards";
+    $("thanks").classList.remove("hidden");
+    clearTimeout(showThanks.t);
+    showThanks.t = setTimeout(() => $("thanks").classList.add("hidden"), 6000);
+  }
+  $("thanks").addEventListener("click", () => { clearTimeout(showThanks.t); $("thanks").classList.add("hidden"); });
+
+  // Clear half-filled form after 2 minutes of inactivity (privacy for the next player).
+  let idle;
+  const bumpIdle = () => { clearTimeout(idle); idle = setTimeout(() => { if (!$("kiosk").classList.contains("hidden")) resetForm(); }, 120000); };
+  ["touchstart", "keydown", "input", "click"].forEach((ev) => document.addEventListener(ev, bumpIdle, { passive: true }));
+
+  // ---------- Modals ----------
+  function modal(html) {
+    const o = document.createElement("div"); o.className = "overlay"; o.innerHTML = `<div class="modal">${html}</div>`;
+    o.addEventListener("click", (e) => { if (e.target === o) o.remove(); });
+    $("modalRoot").appendChild(o); return o;
+  }
+  $("openTerms").addEventListener("click", (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const o = modal(`<h3>Actievoorwaarden</h3><div class="terms">${esc(db.settings.terms)}</div><div class="actions"><button class="btn sm black">Sluiten</button></div>`);
+    o.querySelector("button").onclick = () => o.remove();
+  });
+  function confirmBox(title, text, okLabel, onOk) {
+    const o = modal(`<h3>${esc(title)}</h3><p>${text}</p><div class="actions"><button class="btn sm ghost" data-x>Annuleren</button><button class="btn sm" data-ok>${esc(okLabel)}</button></div>`);
+    o.querySelector("[data-x]").onclick = () => o.remove();
+    o.querySelector("[data-ok]").onclick = () => { o.remove(); onOk(); };
+  }
+
+  // ---------- Hidden admin access: tap logo 5x ----------
+  let taps = 0, tapT;
+  $("logo").addEventListener("click", () => {
+    taps++; clearTimeout(tapT); tapT = setTimeout(() => (taps = 0), 1500);
+    if (taps >= 5) { taps = 0; askPin(); }
+  });
+  function askPin() {
+    let val = "";
+    const o = modal(`<h3 style="text-align:center">Pincode</h3><div class="pin-dots">${"<i></i>".repeat(4)}</div>
+      <div class="keypad">${[1,2,3,4,5,6,7,8,9].map((n) => `<button data-k="${n}">${n}</button>`).join("")}<button data-k="x">✕</button><button data-k="0">0</button><button data-k="b">⌫</button></div>`);
+    const dots = o.querySelector(".pin-dots");
+    const paint = () => dots.querySelectorAll("i").forEach((d, i) => d.classList.toggle("on", i < val.length));
+    o.querySelectorAll("[data-k]").forEach((b) => b.onclick = () => {
+      const k = b.dataset.k;
+      if (k === "x") return o.remove();
+      if (k === "b") val = val.slice(0, -1); else if (val.length < 4) val += k;
+      paint();
+      if (val.length === 4) {
+        if (val === String(db.settings.pin)) { o.remove(); openAdmin(); }
+        else { dots.classList.remove("shake"); void dots.offsetWidth; dots.classList.add("shake"); val = ""; setTimeout(paint, 300); }
+      }
+    });
+  }
+
+  // ---------- Admin ----------
+  function openAdmin() {
+    $("kiosk").classList.add("hidden"); $("admin").classList.remove("hidden");
+    const s = db.settings;
+    $("setEvent").value = s.event; $("setTitle").value = s.title; $("setMinAge").value = s.minAge;
+    $("setPin").value = s.pin; $("setTerms").value = s.terms;
+    renderAdmin(); window.scrollTo(0, 0);
+  }
+  $("closeAdmin").onclick = () => { $("admin").classList.add("hidden"); $("kiosk").classList.remove("hidden"); resetForm(); };
+
+  const winnerIds = () => new Set(db.draws.map((d) => d.winnerId));
+  function renderAdmin() {
+    const q = $("search").value.trim().toLowerCase();
+    const today = new Date().toDateString();
+    $("stTotal").textContent = db.entries.length;
+    $("stToday").textContent = db.entries.filter((e) => new Date(e.createdAt).toDateString() === today).length;
+    $("stWinners").textContent = db.draws.length;
+    const wins = winnerIds();
+    const list = db.entries.map((e, i) => ({ e, n: i + 1 })).filter(({ e }) =>
+      !q || `${e.firstName} ${e.lastName} ${e.email} ${e.phone}`.toLowerCase().includes(q)).reverse();
+    $("rows").innerHTML = list.map(({ e, n }) => `<tr class="${wins.has(e.id) ? "winner" : ""}">
+      <td class="num">${n}</td><td>${fmtDT(e.createdAt)}</td>
+      <td><b>${esc(e.firstName)} ${esc(e.lastName)}</b> ${wins.has(e.id) ? '<span class="pill gold">Winnaar</span>' : ""}</td>
+      <td>${esc(e.email)}</td><td>${esc(e.phone)}</td><td>${fmtDob(e.dob)}</td><td>${esc(e.event)}</td>
+      <td><button class="iconbtn" title="Verwijderen" data-del="${e.id}">🗑</button></td></tr>`).join("");
+    $("empty").classList.toggle("hidden", db.entries.length > 0);
+    $("rows").querySelectorAll("[data-del]").forEach((b) => b.onclick = () => {
+      const e = db.entries.find((x) => x.id === b.dataset.del);
+      confirmBox("Deelnemer verwijderen", `Weet je zeker dat je <b>${esc(e.firstName)} ${esc(e.lastName)}</b> wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`, "Verwijderen", () => {
+        db.entries = db.entries.filter((x) => x.id !== e.id); save(); renderAdmin();
+      });
+    });
+    $("drawLog").innerHTML = db.draws.length ? db.draws.map((d) =>
+      `<li><b>${fmtDT(d.at)}</b> — ${esc(d.winnerName)} (${esc(d.winnerPhone)}) · getrokken uit ${d.pool} deelnemers · actie: ${esc(d.event)} · trekkingscode ${esc(d.code)}</li>`).join("")
+      : `<li style="list-style:none;margin-left:-20px;color:var(--grey-500)">Nog geen trekkingen.</li>`;
+  }
+  $("search").addEventListener("input", renderAdmin);
+
+  $("saveSettings").onclick = () => {
+    const pin = $("setPin").value.trim();
+    if (!/^\d{4}$/.test(pin)) return toast("Pincode moet uit 4 cijfers bestaan.");
+    Object.assign(db.settings, {
+      event: $("setEvent").value.trim() || "King of the Hill",
+      title: $("setTitle").value.trim() || "Gewonnen? Doe mee voor de hoofdprijs!",
+      minAge: Math.max(0, parseInt($("setMinAge").value, 10) || 0),
+      pin, terms: $("setTerms").value.trim() || DEFAULT_TERMS,
+    });
+    save(); applySettingsToKiosk(); toast("Instellingen opgeslagen.");
+  };
+
+  // ---------- Export ----------
+  function csvCell(v) { v = String(v ?? ""); return /[";\n\r]/.test(v) || /^[=+\-@]/.test(v) ? `"${(/^[=+\-@]/.test(v) ? "'" : "") + v.replace(/"/g, '""')}"` : v; }
+  $("btnExport").onclick = () => {
+    if (!db.entries.length) return toast("Er zijn nog geen deelnemers om te exporteren.");
+    const wins = winnerIds();
+    const head = ["Nr", "Datum", "Tijd", "Voornaam", "Achternaam", "E-mail", "Telefoon", "Geboortedatum", "Land", "Akkoord voorwaarden", "Toestemming gegevens", "Actie", "Winnaar"];
+    const lines = db.entries.map((e, i) => {
+      const [dd, tt] = fmtDT(e.createdAt).split(" ");
+      // ="06..." keeps the leading zero when Excel opens the file
+      const phone = `="${e.phone.replace(/[^\d+ ()-]/g, "")}"`;
+      return [i + 1, dd, tt, e.firstName, e.lastName, e.email, null, fmtDob(e.dob), e.country, e.terms ? "Ja" : "Nee", e.consent ? "Ja" : "Nee", e.event, wins.has(e.id) ? "Ja" : ""]
+        .map((v, c) => (c === 6 ? phone : csvCell(v))).join(";");
+    });
+    // Semicolons + BOM so Dutch Excel opens it in columns with correct accents
+    download(`deelnemers-${stamp()}.csv`, "﻿" + [head.join(";"), ...lines].join("\r\n"), "text/csv;charset=utf-8");
+  };
+  $("btnBackup").onclick = () => download(`backup-winnaars-${stamp()}.json`, JSON.stringify(db, null, 2), "application/json");
+  $("btnRestore").onclick = () => $("restoreFile").click();
+  $("restoreFile").onchange = async (ev) => {
+    const f = ev.target.files[0]; ev.target.value = ""; if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      if (!Array.isArray(data.entries)) throw new Error();
+      confirmBox("Back-up terugzetten", `Dit vervangt de huidige gegevens (${db.entries.length} deelnemers) door de back-up (${data.entries.length} deelnemers).`, "Terugzetten", () => {
+        localStorage.setItem(KEY, JSON.stringify(data)); db = load(); applySettingsToKiosk(); openAdmin(); toast("Back-up teruggezet.");
+      });
+    } catch (e) { toast("Dit is geen geldig back-upbestand."); }
+  };
+
+  $("wipe").onclick = () => {
+    const o = modal(`<h3>Alles wissen</h3><p>Typ <b>WISSEN</b> om alle ${db.entries.length} deelnemers en de trekkingslog definitief te verwijderen.</p>
+      <div class="field"><input id="wipeIn" autocapitalize="characters"></div>
+      <div class="actions"><button class="btn sm ghost" data-x>Annuleren</button><button class="btn sm" data-ok>Definitief wissen</button></div>`);
+    o.querySelector("[data-x]").onclick = () => o.remove();
+    o.querySelector("[data-ok]").onclick = () => {
+      if (o.querySelector("#wipeIn").value.trim().toUpperCase() !== "WISSEN") return toast("Typ WISSEN om te bevestigen.");
+      db.entries = []; db.draws = []; save(); o.remove(); renderAdmin(); toast("Alle gegevens zijn gewist.");
+    };
+  };
+
+  // ---------- Draw ----------
+  $("btnDraw").onclick = () => {
+    const wins = winnerIds();
+    const events = [...new Set(db.entries.map((e) => e.event))];
+    if (!db.entries.length) return toast("Er zijn nog geen deelnemers.");
+    const opts = events.map((ev) => `<option ${ev === db.settings.event ? "selected" : ""}>${esc(ev)}</option>`).join("");
+    const o = modal(`<h3>Winnaar trekken</h3>
+      <div class="field" style="margin-bottom:14px"><label>Uit welke actie?</label><select id="drawEvent"><option value="*">Alle acties</option>${opts}</select></div>
+      <label class="check"><input type="checkbox" id="drawExcl" checked><span class="box"><svg viewBox="0 0 16 16"><path d="M2 8.5l4 4L14 4" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Eerdere winnaars uitsluiten</span></label>
+      <p id="poolInfo" style="font-weight:700"></p>
+      <div class="actions"><button class="btn sm ghost" data-x>Annuleren</button><button class="btn sm" data-ok>Start trekking</button></div>`);
+    const pool = () => db.entries.filter((e) => (o.querySelector("#drawEvent").value === "*" || e.event === o.querySelector("#drawEvent").value) && !(o.querySelector("#drawExcl").checked && wins.has(e.id)));
+    const info = () => (o.querySelector("#poolInfo").textContent = `${pool().length} deelnemers in de trekking.`);
+    o.querySelector("#drawEvent").onchange = info; o.querySelector("#drawExcl").onchange = info; info();
+    o.querySelector("[data-x]").onclick = () => o.remove();
+    o.querySelector("[data-ok]").onclick = () => {
+      const p = pool(); if (!p.length) return toast("Geen deelnemers in deze selectie.");
+      const ev = o.querySelector("#drawEvent").value; o.remove(); runDraw(p, ev === "*" ? "Alle acties" : ev);
+    };
+  };
+
+  function runDraw(pool, eventName) {
+    const el = $("draw"), nameEl = $("drawName");
+    el.classList.remove("hidden"); el.classList.add("fast");
+    $("drawLabel").textContent = `Trekking hoofdprijs · ${eventName}`;
+    $("drawMeta").textContent = `${pool.length} deelnemers`; $("drawProof").textContent = ""; $("drawBtns").innerHTML = "";
+    const winnerIdx = randInt(pool.length);
+    const winner = pool[winnerIdx];
+    const display = (e) => `${e.firstName} ${e.lastName.charAt(0)}.`;
+    let delay = 50, elapsed = 0;
+    const tick = () => {
+      if (elapsed > 5200) {
+        nameEl.textContent = `${winner.firstName} ${winner.lastName}`;
+        el.classList.remove("fast");
+        finish(); return;
+      }
+      nameEl.textContent = display(pool[randInt(pool.length)]);
+      elapsed += delay; delay = Math.min(delay * 1.07, 420);
+      setTimeout(tick, delay);
+    };
+    tick();
+
+    function finish() {
+      const at = new Date().toISOString();
+      const code = Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+      const rec = { at, event: eventName, pool: pool.length, winnerIndex: winnerIdx + 1, winnerId: winner.id,
+        winnerName: `${winner.firstName} ${winner.lastName}`, winnerPhone: winner.phone, winnerEmail: winner.email, code,
+        poolIds: pool.map((e) => e.id) };
+      db.draws.push(rec); save();
+      $("drawLabel").textContent = "De winnaar is";
+      $("drawMeta").innerHTML = `${esc(winner.phone)} · ${esc(winner.email)}<br>Getrokken uit ${pool.length} deelnemers op ${fmtDT(at)}`;
+      $("drawProof").textContent = `Trekkingscode ${code} · positie ${winnerIdx + 1} van ${pool.length} · cryptografisch willekeurig`;
+      $("drawBtns").innerHTML = `<button class="btn white" data-a="proof">Download trekkingsbewijs</button><button class="btn black" data-a="close">Sluiten</button>`;
+      $("drawBtns").querySelector('[data-a="close"]').onclick = () => { el.classList.add("hidden"); renderAdmin(); };
+      $("drawBtns").querySelector('[data-a="proof"]').onclick = () => {
+        const lines = [
+          "TREKKINGSBEWIJS – MediaMarkt", "",
+          `Actie:            ${eventName}`, `Datum/tijd:       ${fmtDT(at)}`, `Trekkingscode:    ${code}`,
+          `Aantal deelnemers: ${pool.length}`, `Methode:          crypto.getRandomValues (cryptografisch veilige willekeur), gelijke kans per deelnemer`, "",
+          `WINNAAR: ${winner.firstName} ${winner.lastName} – ${winner.phone} – ${winner.email} (positie ${winnerIdx + 1})`, "",
+          "Deelnemerslijst in de trekking:",
+          ...pool.map((e, i) => `${String(i + 1).padStart(4)}. ${fmtDT(e.createdAt)}  ${e.firstName} ${e.lastName}`),
+        ];
+        download(`trekkingsbewijs-${stamp()}.txt`, lines.join("\r\n"), "text/plain;charset=utf-8");
+      };
+    }
+  }
+})();
+</script>
+</body>
+</html>
